@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<link rel="stylesheet" href="./style.css">
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    var canvas = document.getElementById('canvas')
+  
+    //画笔2D
+    var cxt = canvas.getContext('2d')
+    var arrlist = []
+    //设置画布大小为浏览器可视区域
+    //浏览器实时渲染
+    function init() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.oversize = init;
+    init();
+  
+    //构造函数 创建一个球型的对象
+    function Ball(x,y) {
+      this.x = x
+      this.y = y
+      this.r = 20
+      this.vx = randow(5,-5)
+      this.vy = randow(5,-5)
+      this.color = getColor()
+      this.a = 1
+      this.va = 0.95
+    }
+    var ball = new Ball(100,100)
+    //随机颜色
+    function getColor() {
+      var color = '#' + Math.floor(Math.random() * 0xffffff).toString(16)
+      return color
+    }
+
+    //彩球随机的移动
+    function randow(max,min) {
+      return (max - min) * Math.random() + min;
+    }
+    Ball.prototype = {
+      update:function(){
+        this.x += this.vx
+        this.y += this.vy
+        this.a *= this.va
+      },
+      //渲染小球
+      draw:function() {
+        cxt.beginPath()
+        // 绘制 x轴 Y轴 半径 起始角度 弧度 可选true false
+        cxt.arc(this.x , this.y , this.r , 0 , Math.PI*2 , true)
+        cxt.fillStyle = this.color
+        cxt.globalAlpha = this.a //透明度
+        cxt.globalCompositeOperation = 'light'
+        cxt.fill()//填充绘制圆
+        this.update()
+      },
+    }
+    // 绘制一个图 球形函数
+    function main() {
+      //幕布 起始  0 X，0 Y，清除
+      cxt.clearRect(0,0,window.innerWidth,window.innerHeight)
+      arrlist.forEach((item) => {
+        // console.log(item.x);
+        item.draw()
+      })
+      requestAnimationFrame(main) //递归调用，（定时器）按照固定时间调用函数，取决于浏览器的刷新率
+    }
+    main();
+    //鼠标移动 
+    canvas.addEventListener("mousemove",function(e) {
+      //产生球根据鼠标的位置
+      // console.log(e.clientX,e.clientY);
+      create(e.clientX,e.clientY)
+    })
+    function create(x,y) {
+      arrlist.push(new Ball(x,y))
+    }
+  </script>
+</body>
+</html>

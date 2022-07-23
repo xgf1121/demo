@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div>
+    dalkdljak
+  </div>
+  <script>
+    // 1结构
+    function myPromise(excutor) {
+      let self = this 
+      self.status = 'pending' //状态
+      self.value = null //成功之后返回数值
+      self.reason = null //失败的原因
+
+      //7 存放then方法数据
+      self.onFulfilledCallBacks = []
+      self.onRejectedCallBacks = []
+      //返回成功的结果
+      function resolve(value) {
+        // 5.1 处理成功的状态
+        if(self.status === 'pending') {
+          self.value = value //保存成功结果
+          self.status = 'fulfilled'
+
+          //9 状态改变 依次取出数据
+          self.onFulfilledCallBacks.forEach(item => { 
+            item(value)
+          });
+        }
+      }
+
+      //返回失败的结果
+      function reject(reason) {
+        // 5.2 处理失败的状态
+        if(self.status === 'pending') {
+          self.reason = reason //保存失败结果
+          self.status = 'rejected'
+
+          //9 状态改变 依次取出数据
+          self.onFulfilledCallBacks.forEach(item => { 
+            item(reason)
+          });
+        }
+        
+      }
+
+      //4 方法执行 excutor && excutor(resolve,reject)
+      try {
+        excutor(resolve,reject);
+      } catch(err) {
+        reject(err)
+      }
+    }   
+
+    //2 then() 方法
+    myPromise.prototype.then = function(onFulfilled , onRejected) {
+      //6.确保调用的是一个函数typeOf myPromise.then === 'function'
+      onFulfilled = typeof onFulfilled === "function" ? onFulfilled : function(data) { resolve(data) }
+      onRejected = typeof onFulfilled === "function" ? onFulfilled : function(err) { throw err }
+
+      //8 暂存回调函数
+      let self = this
+      if(self.status === "pending"){
+        self.onFulfilledCallBacks.push(onFulfilled)
+        self.onRejectedCallBacks.push(onRejected)
+      }
+      
+    }
+    //3调用
+    let demo = new myPromise((resolve,reject) => {
+      console.log("1");
+      setTimeout(() => {
+        resolve()
+      },2000)
+    })
+    console.log(typeof demo.then == "function");
+    demo.then(data => {console.log(data);})
+  </script>
+</body>
+
+</html>

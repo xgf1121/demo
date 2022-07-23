@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    class Promise {
+      constructor(excutor){
+        this.status = 'pending'
+        this.value = undefined
+        this.reason = undefined
+        //接受成功失败的回调函数
+        this.onResolveCallback = []
+        this.onRejectedCallback = []
+
+        let resolve = (value) => {
+          if (this.status === "pending") {
+            this.value = value
+            this.status = "fulfilled" 
+            
+            this.onResolveCallback.forEach(fn => fn());
+          }
+        }
+        let reject = (reason) => {
+          if (this.status === "pending") {
+            this.reason = reason
+            this.status = "rejected"
+
+            this.onRejectedCallback.forEach(fn => fn());
+          }
+        }
+        try{
+          excutor(resolve,reject)
+        }catch(err){
+          console.log(err)
+        }
+      }
+      then(onFulfilled,onRejected) {
+        let promise2 = new Promise((resolve, reject)=>{
+          //状态成功或失败调用onFulfilled，onRejected
+          if(this.status === "fulfilled"){
+            setTimeout(() => {
+            //onFulfilled 成功后.then 的回调
+            let x = onFulfilled(this.value)
+            //x 是前一个的.then 的成功返回回调
+            //判断X的类型
+            resolvePromise(x, resolve, reject, promise2)
+            }, 0);
+          }
+          if(this.status === "rejected"){
+            //onRejected 成功后.then 的回调
+            onRejected(this.reason)
+          }
+        //当状态是pending时候将成功失败的数据放入数组保存
+          if(this.status === "pending"){
+            this.onResolveCallback.push(() => {
+              onFulfilled(this.value)
+            })
+            this.onRejectedCallback.push(() => {
+              onFulfilled(this.reason)
+            })
+          }
+        })
+        //返回一个promise
+        return promise2
+      }
+    }
+    
+    function resolvePromise(x, resolve, reject, promise2){
+      //处理循环调用
+      if(x === promise2) {
+        const err = new TypeError("循环错误")
+        return reject(err)
+      }
+      //判断x是不是一个Promise对象
+      if(x instanceof Promise){
+        //X是Promise
+        //x.then(resolve,reject)
+        x.then((value) => {
+          resolve(value)
+        },err => {
+          reject(err)
+        })
+      }else{
+        //x是普通值
+        resolve(x)
+      }
+    }
+
+    //得到一个成功的promise对象
+    Promise.resolve = function(val) {
+      return new Promise((resolve, reject) => {
+        resolve(val)
+      })
+    }
+    Promise.resolve(444).then(data => console.log(data))
+    //reject方法
+    Promise.reject = function(val) {
+      return new Promise((resolve, reject) => {
+        reject(val)
+      })
+    }
+    Promise.reject(999).then(data => console.log(data),err => console.log(err))
+
+    //race 门闩，第一个决议完成或拒绝，其结果成为返回Promise决议
+    Promise.race = function(promises) {
+      return new Promise((resolve, reject) => {
+        for (let index = 0; index < promises.length; index++) {
+          promises[index].then(resolve,reject)
+        }
+      })
+    }
+    
+
+    let p = new Promise((resolve,reject) => {
+      setTimeout(() => {
+        resolve(3)
+      }, 3000);
+    })
+    let p2 = new Promise((resolve,reject) => {
+      setTimeout(() => {
+        resolve(2)
+      }, 2000);
+    })
+    Promise.race([p,p2]).then(value => console.log(value))
+
+    //all方法 门 全部promise完成后执行
+    Promise.all = function(promises) {
+      let arr = [] //保存结果，结果放回但 需要按照顺序
+      let i = 0 //计数器，累计有多少成功了，如果个数 = arr.length 满足条件
+      function processDate(index, data, resolve) {
+        arr[index] = data //按顺序存储结果
+        i++
+        console.log(i);
+        if(i === promises.length){
+          resolve(arr) 
+        }
+      }
+      return new Promise((resolve, reject) => {
+        for (let j = 0; j < promises.length; j++) {
+          promises[j].then(data => {
+            //拿到的结果仅仅只是结果，存到arr中
+            processDate(j, data, resolve)
+          },reject)
+          
+        }
+      })
+    }
+    Promise.all([p,p2]).then(value => console.log(value))
+
+    // console.log(p);
+    // p.then(res => {
+    //   console.log(res,'1');
+    //   return 300
+    // }).then(data => {
+    //   console.log(data,'2');
+    // })
+  </script>
+</body>
+</html>

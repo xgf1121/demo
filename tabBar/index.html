@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<link rel="stylesheet" href="./style.css">
+<body>
+  <div class="navigation">
+    <ul>
+      <li class="list active">
+        <a href="#">
+          <span class="icon"><img src="./img/home.png"  alt=""></span>
+          <span class="text">Home</span>
+        </a>
+      </li>
+      <li class="list">
+        <a href="#">
+          <span class="icon"><img src="./img/camera.png"  alt=""></span>
+          <span class="text">Camera</span>
+        </a>
+      </li>
+      <li class="list">
+        <a href="#">
+          <span class="icon"><img src="./img/Message.png"  alt=""></span>
+          <span class="text">Msg</span>
+        </a>
+      </li>
+      <li class="list">
+        <a href="#">
+          <span class="icon"><img src="./img/personal.png"  alt=""></span>
+          <span class="text">User</span>
+        </a>
+      </li>
+      <li class="list">
+        <a href="#">
+          <span class="icon"><img src="./img/setup.png"  alt=""></span>
+          <span class="text">Set</span>
+        </a>
+      </li>
+      <div class="indicator"></div>
+    </ul>
+  </div>
+</body>
+<script>
+  const list = document.querySelectorAll('.list')
+  // console.log(list);
+  function activeLink(){
+    list.forEach((item) => { 
+      // console.log(item);
+      item.classList.remove('active')
+    });
+    this.classList.add('active')
+  }
+  list.forEach((item) => item.addEventListener('click',activeLink))
+  </script>
+</html>
